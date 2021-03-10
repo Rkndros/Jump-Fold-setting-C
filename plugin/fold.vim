@@ -1,6 +1,21 @@
 set foldmethod=marker
 "set foldtext={}
 
+function! s:isBefore(p1,p2)
+	if a:p1[1] < a:p2[1]
+		return v:true
+	elseif a:p1[1] > a:p2[1]
+		return v:false
+	elseif a:p1[2] < a:p2[2]
+		return v:true
+	else
+		return v:false
+	endif
+	return v:false
+endfunction
+
+
+
 function! MyCreateFold(c)
 	let l:l = a:c
 
@@ -14,7 +29,6 @@ function! MyCreateFold(c)
 
 	normal yl
 	let l:curC = @0
-	echo l:curC
 
 	"get pos of cur 
 	let l:curPos = getpos('.')
@@ -24,6 +38,11 @@ function! MyCreateFold(c)
 	let l:backFlag = (l:curC == '{')?(v:true):(v:false)
 	while !l:backFlag
 		execute 'normal ?\v(\' . l:l . '|\' . l:r . ')'
+
+		if !s:isBefore(getpos('.') , l:curPos)
+			return
+		endif
+
 		normal yl
 		let l:tmp = @0
 		if l:tmp == l:r
@@ -44,6 +63,11 @@ function! MyCreateFold(c)
 	let l:frontFlag = (l:curC == '}')?(v:true):(v:false)
 	while !l:frontFlag
 		execute 'normal /\v(\' . l:l . '|\' . l:r . ')'
+
+		if s:isBefore(getpos('.') , l:curPos)
+			return
+		endif
+
 		normal yl
 		let l:tmp = @0
 		if l:tmp == l:l
