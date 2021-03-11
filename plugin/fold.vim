@@ -15,7 +15,6 @@ function! s:isBefore(p1,p2)
 endfunction
 
 
-
 function! MyCreateFold(c)
 	let l:l = a:c
 
@@ -32,6 +31,7 @@ function! MyCreateFold(c)
 
 	"get pos of cur 
 	let l:curPos = getpos('.')
+	let l:prevPos = l:curPos
 
 	let l:rec = 0
 
@@ -39,9 +39,12 @@ function! MyCreateFold(c)
 	while !l:backFlag
 		execute 'normal ?\v(\' . l:l . '|\' . l:r . ')'
 
-		if !s:isBefore(getpos('.') , l:curPos)
+		if !s:isBefore(getpos('.') , l:prevPos)
+			call setpos('.',l:curPos)
 			return
 		endif
+
+		let l:prevPos = getpos('.')
 
 		normal yl
 		let l:tmp = @0
@@ -55,18 +58,23 @@ function! MyCreateFold(c)
 		endif
 	endwhile
 
-	let l:backpos = (l:backFlag)?( line('.') ):( getpos('.')[1] )
+	let l:backpos = line('.')  "(l:backFlag)?( line('.') ):( getpos('.')[1] )
 
 	call setpos('.',l:curPos)
+
+	let l:prevPos = l:curPos
 	let l:rec = 0
 
 	let l:frontFlag = (l:curC == '}')?(v:true):(v:false)
 	while !l:frontFlag
 		execute 'normal /\v(\' . l:l . '|\' . l:r . ')'
 
-		if s:isBefore(getpos('.') , l:curPos)
+		if s:isBefore(getpos('.') , l:prevPos)
+			call setpos('.',l:curPos)
 			return
 		endif
+
+		let l:prevPos = getpos('.')
 
 		normal yl
 		let l:tmp = @0
@@ -80,7 +88,7 @@ function! MyCreateFold(c)
 		endif
 	endwhile
 
-	let l:frontpos = (l:frontFlag)?( line('.') ):( getpos('.')[1] )
+	let l:frontpos = line('.')   "(l:frontFlag)?( line('.') ):( getpos('.')[1] )
 
 	call setpos('.',l:curPos)
 
@@ -96,13 +104,13 @@ endfunction
 "	return "zc"	
 "endfunction
 
-nnoremap zf{ @=MyCreateFold('{')<CR>
-nnoremap zf( @=MyCreateFold('(')<CR>
-nnoremap zf[ @=MyCreateFold('[')<CR>
+nnoremap z{ @=MyCreateFold('{')<CR>
+nnoremap z( @=MyCreateFold('(')<CR>
+nnoremap z[ @=MyCreateFold('[')<CR>
 
-nnoremap zf} @=MyCreateFold('{')<CR>
-nnoremap zf) @=MyCreateFold('(')<CR>
-nnoremap zf] @=MyCreateFold('[')<CR>
+nnoremap z} @=MyCreateFold('{')<CR>
+nnoremap z) @=MyCreateFold('(')<CR>
+nnoremap z] @=MyCreateFold('[')<CR>
 
 "nnoremap <expr> zc{ myFold({)
 "nnoremap <expr> zc( myFold(()
